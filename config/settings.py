@@ -1,14 +1,17 @@
 from pathlib import Path
+import os
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-your-secret-key-here-change-in-production'
+# Ambil dari environment variable
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here-change-in-production')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Di production, DEBUG harus False
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+# Update ALLOWED_HOSTS
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 
 # Application definition
 INSTALLED_APPS = [
@@ -26,6 +29,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Tambahkan ini
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -54,13 +58,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database - Gunakan PostgreSQL di production
+if config('DATABASE_URL', default=''):
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL'),
+            conn_max_age=600
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -76,10 +89,11 @@ TIME_ZONE = 'Asia/Jakarta'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+# Static files
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
@@ -108,40 +122,19 @@ MESSAGE_TAGS = {
     messages.ERROR: 'error',
 }
 
-# ========================================
-# EMAIL CONFIGURATION - GMAIL SMTP
-# ========================================
-
-# Gunakan SMTP Gmail untuk kirim email
+# Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-
-# ⚠️ GANTI INI DENGAN EMAIL DAN APP PASSWORD KAMU!
-EMAIL_HOST_USER = 'threeofkind1@gmail.com'  # Email Gmail lo
-EMAIL_HOST_PASSWORD = 'xxxx xxxx xxxx xxxx'  # App Password (16 digit dari Google)
-
-# Email pengirim default
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='your-email@gmail.com')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='your-app-password')
 DEFAULT_FROM_EMAIL = 'Threeofkind.supply <threeofkind1@gmail.com>'
-
-# Admin email (tujuan email dari contact form)
 ADMIN_EMAIL = 'threeofkind1@gmail.com'
 
-# Password Reset Timeout
-PASSWORD_RESET_TIMEOUT = 86400  # 24 hours
+PASSWORD_RESET_TIMEOUT = 86400
 
-# ========================================
-# MIDTRANS PAYMENT GATEWAY CONFIGURATION
-# ========================================
-
-# Mode: False = Sandbox (testing), True = Production (live)
-MIDTRANS_IS_PRODUCTION = True
-
-# Sandbox Keys - GANTI DENGAN KEY ANDA!
-#MIDTRANS_SERVER_KEY = ''
-#MIDTRANS_CLIENT_KEY = ''
-
-# Production Keys (uncomment dan ganti saat mau go live)
-#MIDTRANS_SERVER_KEY = ''
-#MIDTRANS_CLIENT_KEY = ''
+# Midtrans Configuration
+MIDTRANS_IS_PRODUCTION = config('MIDTRANS_IS_PRODUCTION', default=True, cast=bool)
+MIDTRANS_SERVER_KEY = config('MIDTRANS_SERVER_KEY', default='your-server-key')
+MIDTRANS_CLIENT_KEY = config('MIDTRANS_CLIENT_KEY', default='your-client-key')
