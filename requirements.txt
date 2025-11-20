@@ -7,7 +7,7 @@ gunicorn
 midtransclient
 pillow
 psycopg2-binary
-python-dotenv
+python-decouple
 requests
 sqlparse
 whitenoise
