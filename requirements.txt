@@ -1,6 +1,5 @@
-Django==5.2.7
+Django
 asgiref
-click
 dj-database-url
 django-allauth
 django-unfold
@@ -9,7 +8,8 @@ midtransclient
 pillow
 psycopg2-binary
 python-dotenv
-pytz
 requests
 sqlparse
 whitenoise
+urllib3
+certifi
