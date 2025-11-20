@@ -11,7 +11,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here-
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Update ALLOWED_HOSTS
-ALLOWED_HOSTS = config('threeofkind-supply.onrender.com', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+ALLOWED_HOSTS = ['threeofkind-supply.onrender.com', 'localhost', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
